@@ -7,6 +7,8 @@ from parkings.api.enforcement import urls as enforcement_urls
 from parkings.api.monitoring import urls as monitoring_urls
 from parkings.api.operator import urls as operator_urls
 from parkings.api.public import urls as public_urls
+from parkings.api.places import urls as places_urls
+
 
 urlpatterns = [
     url(r'^auth/', include(auth_urls)),
@@ -23,6 +25,10 @@ if getattr(settings, 'PARKKIHUBI_OPERATOR_API_ENABLED', False):
 
 if getattr(settings, 'PARKKIHUBI_ENFORCEMENT_API_ENABLED', False):
     urlpatterns.append(url(r'^enforcement/', include(enforcement_urls)))
+
+#if getattr(settings, 'APDS_API_ENABLED', False):
+urlpatterns.append(url(r'^places/', include(places_urls)))
+
 
 urlpatterns.extend([
     url(r'^admin/', admin.site.urls),

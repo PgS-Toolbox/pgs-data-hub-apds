@@ -1,3 +1,5 @@
+from django.core.serializers import serialize
+
 from rest_framework import serializers
 
 from parkings.models import ParkingArea
@@ -16,6 +18,7 @@ class PlacesSerializer(serializers.ModelSerializer):
     rightSpecifications = serializers.SerializerMethodField()
     hierarchyElementReference = serializers.SerializerMethodField()
     occupancyLevel = serializers.SerializerMethodField()
+    spaceBoundedZone = serializers.SerializerMethodField()
     
     class Meta:
         model = ParkingArea
@@ -31,7 +34,8 @@ class PlacesSerializer(serializers.ModelSerializer):
             "hierarchyElementRecord",
             "rightSpecifications",
             "hierarchyElementReference",
-            "occupancyLevel"
+            "occupancyLevel",
+            "spaceBoundedZone"
         )
 
     def get_name(self, obj):
@@ -68,7 +72,7 @@ class PlacesSerializer(serializers.ModelSerializer):
         return None
 
     def get_occupancyLevel(self, obj):
-        data = {
+        return {
             "occupancyIndicator": {
                 "codeListEntryId": {
                     "className": None
@@ -81,4 +85,8 @@ class PlacesSerializer(serializers.ModelSerializer):
                 "entryDefinedValue": None
             }
         }
-        return data
+
+    def get_spaceBoundedZone(self, obj):
+        return {
+            "geoJSONPolygon": serialize('geojson', (obj,), geometry_field='geom', fields=('geom',))
+        }

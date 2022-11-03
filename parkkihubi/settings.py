@@ -184,7 +184,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ] if (DEBUG and TIER == 'dev') else []),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
-    'ALLOWED_VERSIONS': ('v1',),
+    'ALLOWED_VERSIONS': ('v1', 'v2'),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'EXCEPTION_HANDLER': 'parkings.exception_handler.parkings_exception_handler',
     'PAGE_SIZE': 100,

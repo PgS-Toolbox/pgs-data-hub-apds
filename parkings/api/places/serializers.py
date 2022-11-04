@@ -1,4 +1,6 @@
 from django.core.serializers import serialize
+from django.utils import timezone
+from django.db.models import Q
 
 from rest_framework import serializers
 
@@ -69,7 +71,30 @@ class PlacesSerializer(serializers.ModelSerializer):
         return None
 
     def get_hierarchyElementReference(self, obj):
-        return None
+        now = timezone.now()
+        current_parking_count = obj.parkings.filter(
+            Q(time_start__lte=now) & (Q(time_end__gte=now) | Q(time_end__isnull=True))
+        ).count()
+        
+        return {
+            "elementId": {
+                "id": "string",
+                "version": None,
+                "className": None
+            },
+            "demandTable": {
+                "demandType": {
+                    "count": current_parking_count,
+                    "creationTime": now,
+                    "occupancyCalculation": "derived",
+                    "percentage": current_parking_count / obj.estimated_capacity
+                }
+            },
+            "supply": {
+                "supplyViewType": "vehicleView",
+                "supplyQuantity": obj.estimated_capacity,
+            }
+        }
 
     def get_occupancyLevel(self, obj):
         return {

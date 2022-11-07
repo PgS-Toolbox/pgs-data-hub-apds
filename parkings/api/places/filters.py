@@ -13,6 +13,7 @@ class PlacesFilter(filters.FilterSet):
     longitude = filters.NumberFilter(field_name="longitude", method="filter_location")
     radius = filters.NumberFilter(field_name="radius", method="filter_location")
     modified_since = filters.NumberFilter(field_name="modified_at", method="filter_modified_since")
+    type = filters.CharFilter(field_name="type", method="filter_type")
     
     class Meta:
         model = ParkingArea
@@ -20,7 +21,8 @@ class PlacesFilter(filters.FilterSet):
             "latitude",
             "longitude",
             "radius",
-            "modified_since"
+            "modified_since",
+            "type"
         )
         
     def filter_location(self, queryset, name, value):
@@ -36,3 +38,10 @@ class PlacesFilter(filters.FilterSet):
 
     def filter_modified_since(self, queryset, name, value):
         return queryset.filter(modified_at__gte=datetime.fromtimestamp(value))
+
+    def filter_type(self, queryset, name, value):
+        if 'parkingPlace' in value:
+            return queryset
+        else:
+            return ParkingArea.objects.none()
+        

@@ -5,17 +5,17 @@ from parkings.api.operator.parking import OperatorAPIParkingSerializer
 
 
 class SessionsSerializer(serializers.ModelSerializer):
-    actualStart = serializers.SerializerMethodField(required=True)
-    actualEnd = serializers.SerializerMethodField(required=False)
-    initiator = serializers.SerializerMethodField(required=True)
-    identifiedCredentials = serializers.SerializerMethodField(required=True)
-    segments = SegmentsSerializer(required=True)
+    actualStart = serializers.SerializerMethodField()
+    actualEnd = serializers.SerializerMethodField()
+    initiator = serializers.SerializerMethodField()
+    identifiedCredentials = serializers.SerializerMethodField()
+    segments = serializers.SerializerMethodField()
 
     class Meta:
         model = Parking
         fields = (
             "actualStart",
-            "actualEnd"
+            "actualEnd",
             "initiator",
             "identifiedCredentials",
             "segments"
@@ -28,8 +28,8 @@ class SessionsSerializer(serializers.ModelSerializer):
         registration_number = ""
         for credentials in data["identifiedCredentials"]:
             if credentials["type"] == "licensePlate":
-                if identifier := credentials.get("identifier"):
-                    registration_number = identifier.get("id")
+                if credentials.get("identifier"):
+                    registration_number = credentials["identifier"].get("id")
                 else:
                     raise serializers.ValidationError("No 'id' in identifiedCredentials identifier")
             else:
@@ -43,16 +43,21 @@ class SessionsSerializer(serializers.ModelSerializer):
         for segment in data["segments"]:
             if type(segment) != dict:
                 raise serializers.ValidationError("Wrong type for segment, should be a dict")
-            if assign_right := segment.get("assignedRight"):
-                if right_specification := assign_right.get("rightSpecification"):
-                    if right_specification.get("className") and right_specification.get("className") == "ParkingZone":
+            if segment.get("assignedRight"):
+                if segment["assignedRight"].get("rightSpecification"):
+                    if segment["assignedRight"]["rightSpecification"].get("className") and segment["assignedRight"]["rightSpecification"].get("className") == "ParkingZone":
                         if parking_zone is None:
-                            parking_zone = right_specification.get("id")
-                        elif parking_zone != right_specification.get("id"):
+                            parking_zone = segment["assignedRight"]["rightSpecification"].get("id")
+                        elif parking_zone != segment["assignedRight"]["rightSpecification"].get("id"):
                             raise serializers.ValidationError("Different parking zones in one session")
 
         if parking_zone is None:
             raise serializers.ValidationError("No information about parking zone")
+
+        if type(data["initiator"]) != dict:
+            raise serializers.ValidationError("Wrong type for 'initiator', should be a dict")
+        else:
+            operator = data["initiator"].get("id")
 
         parking_data = {
             #"location": None,
@@ -60,7 +65,8 @@ class SessionsSerializer(serializers.ModelSerializer):
             "registration_number": registration_number,
             "time_start": data["actualStart"],
             "time_end": data.get("actualEnd"),
-            "zone": parking_zone,  
+            "zone": parking_zone,
+            "operator": operator
         }
         OperatorAPIParkingSerializer.validate(parking_data)
         return parking_data
@@ -83,7 +89,7 @@ class SessionsSerializer(serializers.ModelSerializer):
         return [{
             "identifier": {
                 "className": "RegistrationNumber",
-                "id": obj.normalize_reg_num
+                "id": obj.normalized_reg_num
             },
             "issuer": [{
                 "language": "en",
@@ -104,7 +110,7 @@ class SessionsSerializer(serializers.ModelSerializer):
                 "rightHolder": [{
                     "identifier": {
                         "className": "RegistrationNumber",
-                        "id": obj.normalize_reg_num
+                        "id": obj.normalized_reg_num
                         },
                     "issuer": [{
                         "language": "en",
@@ -112,7 +118,7 @@ class SessionsSerializer(serializers.ModelSerializer):
                     }]
                 }],
                 "rightSpecification": {
-                    "id": obj.zone,
+                    "id": obj.zone.number,
                     "version": 1,
                     "className": "ParkingZone"
                 },

@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework import status
 
-from parkings.api.sessions.serializers import SessionsSerializer
+from parkings.api.sessions.serializers import SessionsSerializer, SessionsCreateUpdateSerializer
 from parkings.models import Parking
 from parkings.api.operator.parking import OperatorAPIParkingPermission
 
@@ -12,6 +12,13 @@ class SessionsViewSet(viewsets.ModelViewSet):
     queryset = Parking.objects.all()
     serializer_class = SessionsSerializer
     lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return SessionsCreateUpdateSerializer
+        elif self.action == "update":
+            return SessionsCreateUpdateSerializer
+        return super().get_serializer_class()
 
     def perform_create(self, serializer):
         if serializer.data["operator"] == self.request.user.operator.id:

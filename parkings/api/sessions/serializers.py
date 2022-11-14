@@ -4,6 +4,12 @@ from parkings.models import Parking
 from parkings.api.operator.parking import OperatorAPIParkingSerializer
 
 
+CREDENTIAL_TYPES = (
+    'barcode', 'bluetooth', 'eticket', 'hangtag', 'licensePlate', 'permit',
+    'qrCode', 'rfid', 'ticket', 'electronicID', 'permit', 'ticketcoupon', 'vehicleplate'
+)
+
+
 class SessionsSerializer(serializers.ModelSerializer):
     actualStart = serializers.SerializerMethodField()
     actualEnd = serializers.SerializerMethodField()
@@ -28,36 +34,22 @@ class SessionsSerializer(serializers.ModelSerializer):
         registration_number = ""
         for credentials in data["identifiedCredentials"]:
             if credentials["type"] == "licensePlate":
-                if credentials.get("identifier"):
-                    registration_number = credentials["identifier"].get("id")
-                else:
-                    raise serializers.ValidationError("No 'id' in identifiedCredentials identifier")
-            else:
-                raise serializers.ValidationError("No 'identifier' in identifiedCredentials")
+                registration_number = credentials["identifier"].get("id")
         if registration_number == "":
             raise serializers.ValidationError("There is no 'licensePlate' in `identifiedCredentials`")
 
         parking_zone = None
-        if type(data["segments"]) != list:
-            raise serializers.ValidationError("Wrong type for 'segments', should be a list")
         for segment in data["segments"]:
-            if type(segment) != dict:
-                raise serializers.ValidationError("Wrong type for segment, should be a dict")
-            if segment.get("assignedRight"):
-                if segment["assignedRight"].get("rightSpecification"):
-                    if segment["assignedRight"]["rightSpecification"].get("className") and segment["assignedRight"]["rightSpecification"].get("className") == "ParkingZone":
-                        if parking_zone is None:
-                            parking_zone = segment["assignedRight"]["rightSpecification"].get("id")
-                        elif parking_zone != segment["assignedRight"]["rightSpecification"].get("id"):
-                            raise serializers.ValidationError("Different parking zones in one session")
-
+            if segment["assignedRight"]["rightSpecification"]["className"] == "ParkingZone":
+                if not parking_zone:
+                    parking_zone = segment["assignedRight"]["rightSpecification"]["id"]
+                elif parking_zone != segment["assignedRight"]["rightSpecification"]["id"]:
+                    raise serializers.ValidationError("Different parking zones in one session")
         if parking_zone is None:
             raise serializers.ValidationError("No information about parking zone")
 
-        if type(data["initiator"]) != dict:
-            raise serializers.ValidationError("Wrong type for 'initiator', should be a dict")
-        else:
-            operator = data["initiator"].get("id")
+        if data["initiator"]["className"] != "Operator":
+            raise serializers.ValidationError("Initiator className should be: Operator")
 
         parking_data = {
             #"location": None,
@@ -66,7 +58,7 @@ class SessionsSerializer(serializers.ModelSerializer):
             "time_start": data["actualStart"],
             "time_end": data.get("actualEnd"),
             "zone": parking_zone,
-            "operator": operator
+            "operator": data["initiator"]["id"]
         }
         OperatorAPIParkingSerializer.validate(parking_data)
         return parking_data
@@ -82,7 +74,7 @@ class SessionsSerializer(serializers.ModelSerializer):
         return {
             "id": obj.operator.id,
             "version": 1,
-            "className": "operator"
+            "className": "Operator"
         }
 
     def get_identifiedCredentials(self, obj):
@@ -129,3 +121,70 @@ class SessionsSerializer(serializers.ModelSerializer):
                 "licensePlate"
             ]
         }]
+
+
+class VersionedReferenceSerializer(serializers.Serializer):
+    id = serializers.CharField(min_length=1, required=True)
+    version = serializers.IntegerField(min_value=1, required=True)
+    className = serializers.CharField(required=False)
+
+
+class ReferenceSerializer(serializers.Serializer):
+    className = serializers.CharField(min_length=1, required=True)
+    id = serializers.CharField(min_length=1, required=True)
+
+
+class MultilingualStringSerializer(serializers.Serializer):
+    language = serializers.CharField(min_length=2, max_length=2, required=True)
+    string = serializers.CharField(required=True)
+
+    def validate_string(self, value):
+        if not value.islower():
+            raise serializers.ValidationError("'language' should contain only lowercase letters")
+        return value
+
+
+class CredentialAssignedSerializer(serializers.Serializer):
+    identifier = ReferenceSerializer()
+    issuer = MultilingualStringSerializer()
+    type = serializers.ChoiceField(choices=CREDENTIAL_TYPES)
+
+
+class AssignedRightSerializer(serializers.Serializer):
+    id = serializers.CharField(min_length=1, required=True)
+    version = serializers.IntegerField(min_value=1, required=True)
+    rightHolder = serializers.ListField(child=CredentialAssignedSerializer(), allow_empty=False)
+    rightSpecification = VersionedReferenceSerializer()
+    expiry = serializers.DateTimeField()
+    issuanceTime = serializers.DateTimeField()
+    assignedRightIssuer = ReferenceSerializer()
+
+
+class SegmentsSerializer(serializers.Serializer):
+    id = serializers.CharField(min_length=1, required=True)
+    version = serializers.IntegerField(min_value=1, required=True)
+    actualStart = serializers.DateTimeField(required=True)
+    actualEnd = serializers.DateTimeField(required=False)
+    assignedRight = AssignedRightSerializer()
+    validationType = serializers.MultipleChoiceField(choices=CREDENTIAL_TYPES)
+
+
+class SessionsCreateUpdateSerializer(serializers.ModelSerializer):
+    actualStart = serializers.DateTimeField(required=True)
+    actualEnd = serializers.DateTimeField(required=False)
+    initiator = VersionedReferenceSerializer()
+    identifiedCredentials = serializers.ListField(
+        child=CredentialAssignedSerializer(),
+        allow_empty=False
+    )
+    segments = serializers.ListField(child=SegmentsSerializer(), allow_empty=False)
+
+    class Meta:
+        model = Parking
+        fields = (
+            "actualStart",
+            "actualEnd",
+            "initiator",
+            "identifiedCredentials",
+            "segments"
+        )

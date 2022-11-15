@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
+from rest_framework_gis.serializers import GeometrySerializerMethodField
 
 from parkings.models import ParkingCheck
 from parkings.api.constants import CREDENTIAL_TYPES
@@ -21,7 +21,7 @@ class ObservationsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ParkingCheck
-        fields(
+        fields = (
             "id",
             "version",
             "method",
@@ -72,7 +72,7 @@ class ObservationsSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.Serializer):
-    observerLocation = GeoFeatureModelSerializer(required=True)
+    observerLocation = GeometrySerializerMethodField()
 
 
 class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
@@ -86,7 +86,7 @@ class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ParkingCheck
-        fields(
+        fields = (
             "method",
             "observer",
             "type",

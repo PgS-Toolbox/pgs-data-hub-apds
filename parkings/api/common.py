@@ -1,5 +1,5 @@
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import exceptions
+from rest_framework import exceptions, serializers
 from rest_framework_gis.filters import InBBoxFilter
 
 
@@ -19,3 +19,9 @@ class WGS84InBBoxFilter(InBBoxFilter):
         bbox.srid = 4326
         bbox.transform(3879)
         return bbox
+
+
+class VersionedReferenceSerializer(serializers.Serializer):
+    id = serializers.CharField(min_length=1, required=True)
+    version = serializers.IntegerField(min_value=1, required=True)
+    className = serializers.CharField(required=False)

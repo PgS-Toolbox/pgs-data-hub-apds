@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from parkings.models import ParkingCheck
 from parkings.api.constants import CREDENTIAL_TYPES
@@ -71,7 +72,7 @@ class ObservationsSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.Serializer):
-    observerLocation = 
+    observerLocation = GeoFeatureModelSerializer(required=True)
 
 
 class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
@@ -102,11 +103,14 @@ class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
         if data["type"] != "licensePlate":
             raise serializers.ValidationError("Type is different than `licensePlate`")
 
+        if data["location"]["observerLocation"]["type"] != "Point":
+            raise serializers.ValidationError("observerLocation is not a Point")
+
         check_parking_data = {
             "registration_number": data["observedCredentialId"],
             "location": {
-                "latitude": data["location"][""],
-                "longitude": data["location"][""]
+                "latitude": data["location"]["coordinates"][0],
+                "longitude": data["location"]["coordinates"][1]
             },
             "time": data["observationStartTime"]
         }

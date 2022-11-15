@@ -27,43 +27,6 @@ class SessionsSerializer(serializers.ModelSerializer):
             "segments"
         )
 
-    def create(self, validated_data):
-        return OperatorAPIParkingSerializer(data=validated_data)
-
-    def validate(self, data):
-        registration_number = ""
-        for credentials in data["identifiedCredentials"]:
-            if credentials["type"] == "licensePlate":
-                registration_number = credentials["identifier"].get("id")
-        if registration_number == "":
-            raise serializers.ValidationError("There is no 'licensePlate' in `identifiedCredentials`")
-
-        parking_zone = None
-        for segment in data["segments"]:
-            if segment["assignedRight"]["rightSpecification"]["className"] == "ParkingZone":
-                if not parking_zone:
-                    parking_zone = segment["assignedRight"]["rightSpecification"]["id"]
-                elif parking_zone != segment["assignedRight"]["rightSpecification"]["id"]:
-                    raise serializers.ValidationError("Different parking zones in one session")
-        if parking_zone is None:
-            raise serializers.ValidationError("No information about parking zone")
-
-        if data["initiator"]["className"] != "Operator":
-            raise serializers.ValidationError("Initiator className should be: Operator")
-
-        parking_data = {
-            #"location": None,
-            #"terminal_number": None,
-            "registration_number": registration_number,
-            "time_start": data["actualStart"],
-            "time_end": data.get("actualEnd"),
-            "zone": parking_zone,
-            "operator": data["initiator"]["id"]
-        }
-        OperatorAPIParkingSerializer.validate(parking_data)
-        return parking_data
-
-
     def get_actualStart(self, obj):
         return obj.time_start
 
@@ -188,3 +151,39 @@ class SessionsCreateUpdateSerializer(serializers.ModelSerializer):
             "identifiedCredentials",
             "segments"
         )
+
+    def create(self, validated_data):
+        return OperatorAPIParkingSerializer(data=validated_data)
+
+    def validate(self, data):
+        registration_number = ""
+        for credentials in data["identifiedCredentials"]:
+            if credentials["type"] == "licensePlate":
+                registration_number = credentials["identifier"].get("id")
+        if registration_number == "":
+            raise serializers.ValidationError("There is no 'licensePlate' in `identifiedCredentials`")
+
+        parking_zone = None
+        for segment in data["segments"]:
+            if segment["assignedRight"]["rightSpecification"]["className"] == "ParkingZone":
+                if not parking_zone:
+                    parking_zone = segment["assignedRight"]["rightSpecification"]["id"]
+                elif parking_zone != segment["assignedRight"]["rightSpecification"]["id"]:
+                    raise serializers.ValidationError("Different parking zones in one session")
+        if parking_zone is None:
+            raise serializers.ValidationError("No information about parking zone")
+
+        if data["initiator"]["className"] != "Operator":
+            raise serializers.ValidationError("Initiator className should be: Operator")
+
+        parking_data = {
+            #"location": None,
+            #"terminal_number": None,
+            "registration_number": registration_number,
+            "time_start": data["actualStart"],
+            "time_end": data.get("actualEnd"),
+            "zone": parking_zone,
+            "operator": data["initiator"]["id"]
+        }
+        OperatorAPIParkingSerializer.validate(parking_data)
+        return parking_data

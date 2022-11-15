@@ -2,12 +2,8 @@ from rest_framework import serializers
 
 from parkings.models import Parking
 from parkings.api.operator.parking import OperatorAPIParkingSerializer
-
-
-CREDENTIAL_TYPES = (
-    'barcode', 'bluetooth', 'eticket', 'hangtag', 'licensePlate', 'permit',
-    'qrCode', 'rfid', 'ticket', 'electronicID', 'permit', 'ticketcoupon', 'vehicleplate'
-)
+from parkings.api.constants import CREDENTIAL_TYPES
+from parkings.api.common import VersionedReferenceSerializer
 
 
 class SessionsSerializer(serializers.ModelSerializer):
@@ -84,12 +80,6 @@ class SessionsSerializer(serializers.ModelSerializer):
                 "licensePlate"
             ]
         }]
-
-
-class VersionedReferenceSerializer(serializers.Serializer):
-    id = serializers.CharField(min_length=1, required=True)
-    version = serializers.IntegerField(min_value=1, required=True)
-    className = serializers.CharField(required=False)
 
 
 class ReferenceSerializer(serializers.Serializer):

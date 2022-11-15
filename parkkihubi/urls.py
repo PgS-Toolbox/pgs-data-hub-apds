@@ -31,7 +31,7 @@ if getattr(settings, 'PARKKIHUBI_ENFORCEMENT_API_ENABLED', False):
 #if getattr(settings, 'APDS_API_ENABLED', False):
 urlpatterns.append(url(r'^places/', include(places_urls)))
 urlpatterns.append(url(r'^sessions/', include(sessions_urls)))
-urlpatterns.append(url(r'^sessions/', include(observations_urls)))
+urlpatterns.append(url(r'^observations/', include(observations_urls)))
 
 
 urlpatterns.extend([

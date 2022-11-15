@@ -4,6 +4,7 @@ from parkings.models import Parking
 from parkings.api.operator.parking import OperatorAPIParkingSerializer
 from parkings.api.constants import CREDENTIAL_TYPES
 from parkings.api.common import VersionedReferenceSerializer
+from parkings.api.rights.serializers import AssignedRightSerializer, CredentialAssignedSerializer
 
 
 class SessionsSerializer(serializers.ModelSerializer):
@@ -80,37 +81,6 @@ class SessionsSerializer(serializers.ModelSerializer):
                 "licensePlate"
             ]
         }]
-
-
-class ReferenceSerializer(serializers.Serializer):
-    className = serializers.CharField(min_length=1, required=True)
-    id = serializers.CharField(min_length=1, required=True)
-
-
-class MultilingualStringSerializer(serializers.Serializer):
-    language = serializers.CharField(min_length=2, max_length=2, required=True)
-    string = serializers.CharField(required=True)
-
-    def validate_string(self, value):
-        if not value.islower():
-            raise serializers.ValidationError("'language' should contain only lowercase letters")
-        return value
-
-
-class CredentialAssignedSerializer(serializers.Serializer):
-    identifier = ReferenceSerializer()
-    issuer = MultilingualStringSerializer()
-    type = serializers.ChoiceField(choices=CREDENTIAL_TYPES)
-
-
-class AssignedRightSerializer(serializers.Serializer):
-    id = serializers.CharField(min_length=1, required=True)
-    version = serializers.IntegerField(min_value=1, required=True)
-    rightHolder = serializers.ListField(child=CredentialAssignedSerializer(), allow_empty=False)
-    rightSpecification = VersionedReferenceSerializer()
-    expiry = serializers.DateTimeField()
-    issuanceTime = serializers.DateTimeField()
-    assignedRightIssuer = ReferenceSerializer()
 
 
 class SegmentsSerializer(serializers.Serializer):

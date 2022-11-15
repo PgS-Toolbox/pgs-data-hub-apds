@@ -25,3 +25,18 @@ class VersionedReferenceSerializer(serializers.Serializer):
     id = serializers.CharField(min_length=1, required=True)
     version = serializers.IntegerField(min_value=1, required=True)
     className = serializers.CharField(required=False)
+
+
+class ReferenceSerializer(serializers.Serializer):
+    className = serializers.CharField(min_length=1, required=True)
+    id = serializers.CharField(min_length=1, required=True)
+
+
+class MultilingualStringSerializer(serializers.Serializer):
+    language = serializers.CharField(min_length=2, max_length=2, required=True)
+    string = serializers.CharField(required=True)
+
+    def validate_string(self, value):
+        if not value.islower():
+            raise serializers.ValidationError("'language' should contain only lowercase letters")
+        return value

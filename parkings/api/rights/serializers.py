@@ -97,5 +97,25 @@ class PermitCreateAssignedRightSerializer(serializers.ModelSerializer):
         return PermitSerializer(**validated_data)
 
     def validate(self, data):
-        # TODO
-        return data
+        registration_number = None
+        for right_holder in data["rightHolder"]:
+            if right_holder["type"] == "licensePlate":
+                if registration_number is None:
+                    registration_number = right_holder["identifier"]["id"]
+                elif registration_number != right_holder["identifier"]["id"]:
+                    raise serializers.ValidationError("More than one registration number")
+
+        permit_data = {
+            "series": ,
+            "subjects": [{
+                "start_time": data["issuanceTime"],
+                "end_time": data["expiry"],
+                "registration_number": registration_number,
+            }],
+            "areas": [{
+                "start_time": data["issuanceTime"],
+                "end_time": data["expiry"],
+                "area": "",
+            }]
+        }
+        return permit_data

@@ -4,10 +4,10 @@ from parkings.models import Parking
 
 
 class SessionsFilter(filters.FilterSet):
-    right_spec = filters.CharFilter(field_name="", method="filter_right_spec")
-    credential_type = filters.CharFilter(field_name="", method="filter_credential_type")
-    credential_class = filters.CharFilter(field_name="", method="filter_credential_class")
-    credential_id = filters.CharFilter(field_name="", method="filter_credential_id")
+    right_spec = filters.CharFilter(field_name="right_spec", method="filter_right_spec")
+    credential_type = filters.CharFilter(field_name="credential_type", method="filter_credential_type")
+    credential_class = filters.CharFilter(field_name="credential_class", method="filter_credential_class")
+    credential_id = filters.CharFilter(field_name="credential_id", method="filter_credential_id")
     latitude = filters.NumberFilter(field_name="latitude", method="filter_location")
     longitude = filters.NumberFilter(field_name="longitude", method="filter_location")
     radius = filters.NumberFilter(field_name="radius", method="filter_location")

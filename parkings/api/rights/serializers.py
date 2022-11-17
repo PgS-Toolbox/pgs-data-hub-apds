@@ -119,3 +119,32 @@ class PermitCreateAssignedRightSerializer(serializers.ModelSerializer):
             }]
         }
         return permit_data
+
+
+class RightSpecifications(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    version = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    issuer = serializers.SerializerMethodField()
+    transferable = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+
+    def get_id(self, obj):
+        return obj.number
+
+    def get_version(self, obj):
+        return obj.version
+
+    def get_description(self, obj):
+        return [{
+            "language": "en",
+            "string": obj.name
+        }]
+
+    def get_transferable(self, obj):
+        return False
+
+    def get_type(self, obj):
+        return "oneTimeUseParking"
+
+    

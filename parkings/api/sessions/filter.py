@@ -17,8 +17,23 @@ class SessionsFilter(filters.FilterSet):
     start_after = filters.NumberFilter(field_name="time_start", method="filter_start_after")
     end_after = filters.NumberFilter(field_name="time_end", method="filter_end_after")
 
-    def filter_right_spec(self, queryset, name, values):
-        return queryset.filter(domain__code__eq=)
+    def filter_right_spec(self, queryset, name, value):
+        return queryset.filter(domain__code=value)
+
+    def filter_credential_type(self, queryset, name, value):
+        if value == "licensePlate":
+            return queryset
+        else:
+            return Parking.objects.none()
+
+    def filter_credential_class(self, queryset, name, value):
+        if value == "RegistrationNumber":
+            return queryset
+        else:
+            return Parking.objects.none()
+
+    def filter_credential_id(self, queryset, name, value):
+        return queryset.filter(normalized_reg_num=value)
 
     def filter_location(self, queryset, name, value):
         params = self.request.query_params

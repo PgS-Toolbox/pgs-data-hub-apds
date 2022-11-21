@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from parkings.models import Permit
+from parkings.models import Permit, PaymentZone
 from parkings.api.common import (
     VersionedReferenceSerializer, 
     ReferenceSerializer, 
@@ -78,56 +78,24 @@ class AssignedRightSerializer(serializers.Serializer):
     assignedRightIssuer = ReferenceSerializer()
 
 
-class PermitCreateAssignedRightSerializer(serializers.ModelSerializer):
-    rightHolder = serializers.ListField(child=CredentialAssignedSerializer(), allow_empty=False)
-    rightSpecification = VersionedReferenceSerializer()
-    expiry = serializers.DateTimeField()
-    issuanceTime = serializers.DateTimeField()
-    
-    class Meta:
-        model = Permit
-        fields = (
-            "rightHolder",
-            "rightSpecification",
-            "expiry",
-            "issuanceTime"
-        )
-
-    def create(self, validated_data):
-        return PermitSerializer(**validated_data)
-
-    def validate(self, data):
-        registration_number = None
-        for right_holder in data["rightHolder"]:
-            if right_holder["type"] == "licensePlate":
-                if registration_number is None:
-                    registration_number = right_holder["identifier"]["id"]
-                elif registration_number != right_holder["identifier"]["id"]:
-                    raise serializers.ValidationError("More than one registration number")
-
-        permit_data = {
-            "series": ,
-            "subjects": [{
-                "start_time": data["issuanceTime"],
-                "end_time": data["expiry"],
-                "registration_number": registration_number,
-            }],
-            "areas": [{
-                "start_time": data["issuanceTime"],
-                "end_time": data["expiry"],
-                "area": "",
-            }]
-        }
-        return permit_data
-
-
-class RightSpecifications(serializers.ModelSerializer):
+class RightSpecificationsSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     version = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     issuer = serializers.SerializerMethodField()
     transferable = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PaymentZone
+        fields = (
+            "id",
+            "version",
+            "description",
+            "issuer",
+            "transferable",
+            "type"
+        )
 
     def get_id(self, obj):
         return obj.number

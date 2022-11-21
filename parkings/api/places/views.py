@@ -4,6 +4,7 @@ from parkings.api.places.serializers import PlacesSerializer
 from parkings.models import ParkingArea
 from parkings.api.places.filters import PlacesFilter
 
+
 class PlacesViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
     queryset = ParkingArea.objects.all()

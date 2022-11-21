@@ -10,6 +10,7 @@ from parkings.api.public import urls as public_urls
 from parkings.api.places import urls as places_urls
 from parkings.api.sessions import urls as sessions_urls
 from parkings.api.observations import urls as observations_urls
+from parkings.api.rights import urls as rights_urls
 
 
 urlpatterns = [
@@ -32,6 +33,7 @@ if getattr(settings, 'PARKKIHUBI_ENFORCEMENT_API_ENABLED', False):
 urlpatterns.append(url(r'^places/', include(places_urls)))
 urlpatterns.append(url(r'^sessions/', include(sessions_urls)))
 urlpatterns.append(url(r'^observations/', include(observations_urls)))
+urlpatterns.append(url(r'^rights/', include(rights_urls)))
 
 
 urlpatterns.extend([

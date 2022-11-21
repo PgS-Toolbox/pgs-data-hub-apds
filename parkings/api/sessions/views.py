@@ -5,7 +5,7 @@ from rest_framework import status
 from parkings.api.sessions.serializers import SessionsSerializer, SessionsCreateUpdateSerializer
 from parkings.models import Parking
 from parkings.api.operator.parking import OperatorAPIParkingPermission
-from parkings.api.sessions.filter import SessionsFilter
+from parkings.api.sessions.filters import SessionsFilter
 
 
 class SessionsViewSet(viewsets.ModelViewSet):

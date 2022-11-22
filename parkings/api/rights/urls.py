@@ -10,5 +10,5 @@ router.register(r'rights/specs', RightsSpecificationsViewSet, basename='rights-s
 
 app_name = 'rights'
 urlpatterns = [
-    versioned_url('v2', router.urls),
+    versioned_url('apds', router.urls),
 ]

@@ -9,5 +9,5 @@ router.register(r'observations', ObservationsViewSet, basename='observations')
 
 app_name = 'observations'
 urlpatterns = [
-    versioned_url('v2', router.urls),
+    versioned_url('apds', router.urls),
 ]

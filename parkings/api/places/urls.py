@@ -18,5 +18,5 @@ router.register(r'places', PlacesViewSet, basename='places')
 
 app_name = 'places'
 urlpatterns = [
-    versioned_url('v2', router.urls),
+    versioned_url('apds', router.urls),
 ]

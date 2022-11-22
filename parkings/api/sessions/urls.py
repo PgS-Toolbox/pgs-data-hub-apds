@@ -9,5 +9,5 @@ router.register(r'sessions', SessionsViewSet, basename='sessions')
 
 app_name = 'sessions'
 urlpatterns = [
-    versioned_url('v2', router.urls),
+    versioned_url('apds', router.urls),
 ]

@@ -82,7 +82,6 @@ class RightSpecificationsSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     version = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
-    issuer = serializers.SerializerMethodField()
     transferable = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
 
@@ -92,7 +91,6 @@ class RightSpecificationsSerializer(serializers.ModelSerializer):
             "id",
             "version",
             "description",
-            "issuer",
             "transferable",
             "type"
         )
@@ -101,7 +99,7 @@ class RightSpecificationsSerializer(serializers.ModelSerializer):
         return obj.number
 
     def get_version(self, obj):
-        return obj.version
+        return 1
 
     def get_description(self, obj):
         return [{

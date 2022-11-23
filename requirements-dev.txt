@@ -40,7 +40,7 @@ virtualenv==20.0.31       # via tox
 wcwidth==0.2.5            # via prompt-toolkit
 werkzeug==1.0.1
 zipp==1.2.0               # via importlib-metadata, importlib-resources
-drf_yasg
+drf_yasg==1.21.4
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools                # via ipython

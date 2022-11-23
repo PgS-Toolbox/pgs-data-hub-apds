@@ -56,4 +56,7 @@ class ValidPermitItemViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = ValidPermitItemFilter
 
     def get_queryset(self):
-        return super().get_queryset().filter(permit__domain=self.request.user.enforcer.enforced_domain)
+        if hasattr(self.request.user, 'enforcer'):
+            return super().get_queryset().filter(permit__domain=self.request.user.enforcer.enforced_domain)
+        else:
+            return super().get_queryset()

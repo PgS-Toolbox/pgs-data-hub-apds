@@ -71,7 +71,7 @@ class ObservationsSerializer(serializers.ModelSerializer):
         }
 
 
-class LocationSerializer(serializers.Serializer):
+class LocationSerializerAPDS(serializers.Serializer):
     observerLocation = GeometrySerializerMethodField()
 
 
@@ -81,7 +81,7 @@ class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
     type = serializers.ChoiceField(choices=CREDENTIAL_TYPES, required=True)
     observedCredentialId = serializers.CharField(max_length=20, required=True)
     observationStartTime = serializers.DateTimeField(required=True)
-    location = LocationSerializer()
+    location = LocationSerializerAPDS()
     observerOrganisation = VersionedReferenceSerializer()
 
     class Meta:

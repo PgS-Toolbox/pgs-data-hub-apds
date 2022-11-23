@@ -33,7 +33,7 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        return super().get_queryset().filter(owner=self.request.user)
+        return super().get_queryset().filter(owner=self.request.user.pk)
 
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
@@ -121,7 +121,7 @@ class PermitViewSet(viewsets.ModelViewSet):
         return super().get_serializer(*args, **kwargs)
 
     def get_queryset(self):
-        return super().get_queryset().filter(series__owner=self.request.user)
+        return super().get_queryset().filter(series__owner=self.request.user.pk)
 
 
 class ActivePermitByExternalIdSerializer(PermitSerializer):

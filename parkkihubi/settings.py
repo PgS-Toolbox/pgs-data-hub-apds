@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'parkkihubi',
     'parkings',
     'sanitized_dump',
+    'drf_yasg'
 ] + env.list("EXTRA_INSTALLED_APPS", default=['parkkihubi_hel'])
 
 

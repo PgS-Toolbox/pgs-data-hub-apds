@@ -108,4 +108,7 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
         serializer.save(operator=self.request.user.operator)
 
     def get_queryset(self):
-        return super().get_queryset().filter(operator=self.request.user.operator)
+        if hasattr(self.request.user, 'operator'):
+            return super().get_queryset().filter(operator=self.request.user.operator)
+        else:
+            return super().get_queryset()

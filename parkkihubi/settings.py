@@ -211,6 +211,18 @@ JWT2FA_AUTH = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+
+###########
+# Swagger #
+###########
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Api-Key": {"type": "apiKey", "name": "Authorization", "in": "header"},
+    },
+    "DISPLAY_OPERATION_ID": False,
+}
+
 ##############
 # Parkkihubi #
 ##############

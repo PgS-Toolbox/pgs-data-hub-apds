@@ -1,3 +1,5 @@
+from django.core.serializers import serialize
+
 from rest_framework import serializers
 from rest_framework_gis.serializers import GeometrySerializerMethodField
 
@@ -44,7 +46,10 @@ class ObservationsSerializer(serializers.ModelSerializer):
         return "visual"
 
     def get_observer(self, obj):
-        return obj.performer.name
+        if obj.performer.get_full_name():
+            return obj.performer.get_full_name()
+        else:
+            return obj.performer.get_username()
 
     def get_type(self, obj):
         return "licensePlate"
@@ -60,19 +65,32 @@ class ObservationsSerializer(serializers.ModelSerializer):
 
     def get_location(self, obj):
         return {
-            "observerLocation": obj.location
+            "observerLocation": serialize('geojson', (obj,), geometry_field='location', fields=('location',))
         }
 
     def get_observerOrganisation(self, obj):
         return {
-            "id": obj.performer.enforced_domain.code,
+            "id": obj.performer.enforcer.enforced_domain.code,
             "version": 1,
             "className": "EnforcementDomain"
         }
 
 
+class GeoJsonGeometryPointSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=("Point",))
+    coordinates = serializers.ListField(
+        child=serializers.FloatField(min_value=-180, max_value=180),
+        min_length=2,
+        max_length=2
+    )
+
+
+class GeoJsonPointSerializer(serializers.Serializer):
+    geometry = GeoJsonGeometryPointSerializer()
+
+
 class LocationSerializerAPDS(serializers.Serializer):
-    observerLocation = GeometrySerializerMethodField()
+    observerLocation = GeoJsonPointSerializer()
 
 
 class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
@@ -96,23 +114,23 @@ class ObservationsCreateUpdateSerializer(serializers.ModelSerializer):
             "observerOrganisation"
         )
 
-    def create(self, validated_data):
-        return CheckParkingSerializer(**validated_data)
-
-    def validated_data(self, data):
-        if data["type"] != "licensePlate":
+    def validate(self, attrs):
+        if attrs["type"] != "licensePlate":
             raise serializers.ValidationError("Type is different than `licensePlate`")
 
-        if data["location"]["observerLocation"]["type"] != "Point":
-            raise serializers.ValidationError("observerLocation is not a Point")
+        if "observerLocation" not in attrs["location"].keys():
+            raise serializers.ValidationError("No observerLocation")
 
         check_parking_data = {
-            "registration_number": data["observedCredentialId"],
+            "registration_number": attrs["observedCredentialId"],
             "location": {
-                "latitude": data["location"]["coordinates"][0],
-                "longitude": data["location"]["coordinates"][1]
+                "latitude": attrs["location"]["observerLocation"]["geometry"]["coordinates"][0],
+                "longitude": attrs["location"]["observerLocation"]["geometry"]["coordinates"][1]
             },
-            "time": data["observationStartTime"]
+            "time": attrs["observationStartTime"]
         }
-        CheckParkingSerializer.validate(check_parking_data)
-        return check_parking_data
+
+        check_parking_serializer = CheckParkingSerializer(data=check_parking_data)
+        check_parking_serializer.is_valid(raise_exception=True)
+        
+        return check_parking_serializer.validated_data

@@ -36,6 +36,53 @@ class CheckParkingSerializer(serializers.Serializer):
     time = AwareDateTimeField(required=False)
 
 
+def parking_check_result(params, request):
+    # Read input parameters to variables
+    time = params.get("time") or timezone.now()
+    registration_number = params.get("registration_number")
+    (wgs84_location, gk25_location) = get_location(params)
+
+    domain = request.user.enforcer.enforced_domain
+
+    zone = get_payment_zone(gk25_location, domain)
+    area = get_permit_area(gk25_location, domain)
+
+    (allowed_by, parking, end_time) = check_parking(
+        registration_number, zone, area, time, domain)
+
+    allowed = bool(allowed_by)
+
+    if not allowed:
+        # If no matching parking or permit was found, try to find
+        # one that has just expired, i.e. was valid a few minutes
+        # ago (where "a few minutes" is the grace duration)
+        past_time = time - get_grace_duration()
+        (_allowed_by, parking, end_time) = check_parking(
+            registration_number, zone, area, past_time, domain)
+
+    result = {
+        "allowed": allowed,
+        "end_time": end_time,
+        "location": {
+            "payment_zone": zone,
+            "permit_area": area.identifier if area else None,
+        },
+        "time": time,
+    }
+
+    parking_check = ParkingCheck.objects.create(
+        performer=request.user,
+        time=time,
+        time_overridden=bool(params.get("time")),
+        registration_number=registration_number,
+        location=wgs84_location,
+        result=result,
+        allowed=allowed,
+        found_parking=parking,
+    )
+    return result, parking_check
+
+
 class CheckParking(generics.GenericAPIView):
     """
     Check if parking is valid for given registration number and location.
@@ -50,49 +97,7 @@ class CheckParking(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        # Read input parameters to variables
-        time = params.get("time") or timezone.now()
-        registration_number = params.get("registration_number")
-        (wgs84_location, gk25_location) = get_location(params)
-
-        domain = request.user.enforcer.enforced_domain
-
-        zone = get_payment_zone(gk25_location, domain)
-        area = get_permit_area(gk25_location, domain)
-
-        (allowed_by, parking, end_time) = check_parking(
-            registration_number, zone, area, time, domain)
-
-        allowed = bool(allowed_by)
-
-        if not allowed:
-            # If no matching parking or permit was found, try to find
-            # one that has just expired, i.e. was valid a few minutes
-            # ago (where "a few minutes" is the grace duration)
-            past_time = time - get_grace_duration()
-            (_allowed_by, parking, end_time) = check_parking(
-                registration_number, zone, area, past_time, domain)
-
-        result = {
-            "allowed": allowed,
-            "end_time": end_time,
-            "location": {
-                "payment_zone": zone,
-                "permit_area": area.identifier if area else None,
-            },
-            "time": time,
-        }
-
-        ParkingCheck.objects.create(
-            performer=request.user,
-            time=time,
-            time_overridden=bool(params.get("time")),
-            registration_number=registration_number,
-            location=wgs84_location,
-            result=result,
-            allowed=allowed,
-            found_parking=parking,
-        )
+        result, _ = parking_check_result(params, request)
 
         return Response(result)
 

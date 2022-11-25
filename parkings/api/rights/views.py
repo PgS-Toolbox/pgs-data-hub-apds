@@ -2,10 +2,11 @@ from rest_framework import viewsets, permissions
 
 from parkings.api.rights.serializers import PermitAssignedRightSerializer, RightSpecificationsSerializer
 from parkings.models import Permit, PaymentZone
+from parkings.api.enforcement.permissions import IsEnforcer
 
 
 class AssignedRightsViewSet(viewsets.ReadOnlyModelViewSet):
-    #permission_classes = []
+    permission_classes = [IsEnforcer]
     queryset = Permit.objects.all()
     serializer_class = PermitAssignedRightSerializer
 

@@ -28,9 +28,7 @@ class ObservationsViewSet(viewsets.ModelViewSet):
         create_serializer.is_valid(raise_exception=True)
         obj = self.perform_create(create_serializer)
         serializer = ObservationsSerializer(obj)
-        print(serializer.data)
         headers = self.get_success_headers(serializer.data)
-        print(headers)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):

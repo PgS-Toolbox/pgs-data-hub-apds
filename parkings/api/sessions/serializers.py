@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from parkings.models import Parking
+from parkings.models import Parking, PaymentZone
 from parkings.api.operator.parking import OperatorAPIParkingSerializer
 from parkings.api.constants import CREDENTIAL_TYPES
 from parkings.api.common import VersionedReferenceSerializer
@@ -112,9 +112,6 @@ class SessionsCreateUpdateSerializer(serializers.ModelSerializer):
             "segments"
         )
 
-    def create(self, validated_data):
-        return OperatorAPIParkingSerializer(data=validated_data)
-
     def validate(self, data):
         registration_number = ""
         for credentials in data["identifiedCredentials"]:
@@ -136,14 +133,20 @@ class SessionsCreateUpdateSerializer(serializers.ModelSerializer):
         if data["initiator"]["className"] != "Operator":
             raise serializers.ValidationError("Initiator className should be: Operator")
 
+        try:
+            payment_zone = PaymentZone.objects.get(code=parking_zone)
+        except:
+            raise serializers.ValidationError("ParkingZone not found")
+
         parking_data = {
-            #"location": None,
-            #"terminal_number": None,
             "registration_number": registration_number,
             "time_start": data["actualStart"],
             "time_end": data.get("actualEnd"),
             "zone": parking_zone,
-            "operator": data["initiator"]["id"]
+            "operator": data["initiator"]["id"],
+            "domain": payment_zone.domain.code
         }
-        OperatorAPIParkingSerializer.validate(parking_data)
-        return parking_data
+        parking_serializer = OperatorAPIParkingSerializer(data=parking_data)
+        parking_serializer.is_valid(raise_exception=True)
+
+        return parking_serializer.validated_data

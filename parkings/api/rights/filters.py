@@ -9,13 +9,9 @@ from parkings.models import Permit, PaymentZone
 
 
 class AssignedRightsFilter(filters.FilterSet):
-    credential_type = filters.CharFilter(field_name="credential_type", method="filter_credential_type"),
-    credential_id = filters.CharFilter(field_name="credential_id", method="filter_credential_id"),
+    credential_type = filters.CharFilter(field_name="credential_type", method="filter_credential_type")
+    credential_id = filters.CharFilter(field_name="credential_id", method="filter_credential_id")
     modified_since = filters.NumberFilter(field_name="modified_at", method="filter_modified_since")
-    start_before = filters.NumberFilter(field_name="start_befor", method="filter_start_before")
-    end_before = filters.NumberFilter(field_name="end_before", method="filter_end_before")
-    start_after = filters.NumberFilter(field_name="start_before", method="filter_start_after")
-    end_after = filters.NumberFilter(field_name="end_after", method="filter_end_after")
 
     class Meta:
         model = Permit
@@ -23,10 +19,6 @@ class AssignedRightsFilter(filters.FilterSet):
             "credential_type",
             "credential_id",
             "modified_since",
-            "start_before",
-            "end_before",
-            "start_after",
-            "end_after"
         )
 
     def filter_credential_type(self, queryset, name, value):
@@ -40,18 +32,6 @@ class AssignedRightsFilter(filters.FilterSet):
     
     def filter_modified_since(self, queryset, name, value):
         return queryset.filter(modified_at__gte=datetime.fromtimestamp(value))
-
-    def filter_start_before(self, queryset, name, value):
-        return queryset.filter(subjects__contains__datetime__lte={"start_time": datetime.fromtimestamp(value)})
-
-    def filter_end_before(self, queryset, name, value):
-        return queryset.filter(subjects__contains__datetime__lte={"end_time": datetime.fromtimestamp(value)})
-
-    def filter_start_after(self, queryset, name, value):
-        return queryset.filter(subjects__contains__datetime__gte={"start_time": datetime.fromtimestamp(value)})
-
-    def filter_end_after(self, queryset, name, value):
-        return queryset.filter(subjects__contains__datetime__gte={"end_time": datetime.fromtimestamp(value)})
 
 
 class RightsSpecificationsFilter(filters.FilterSet):

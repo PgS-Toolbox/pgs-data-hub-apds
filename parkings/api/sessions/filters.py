@@ -1,3 +1,8 @@
+from datetime import datetime
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
+
 import django_filters as filters
 
 from parkings.models import Parking
@@ -41,7 +46,7 @@ class SessionsFilter(filters.FilterSet):
             center = Point(float(params["longitude"]), float(params["latitude"]))
             return (
                 queryset.filter(
-                    geom__distance_lte=(center, D(m=float(params["radius"])))
+                    location__distance_lte=(center, D(m=float(params["radius"])))
                 )
             )
         return queryset

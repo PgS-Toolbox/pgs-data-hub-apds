@@ -147,8 +147,10 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
         return filter_backend.get_filterset(self.request, queryset, self)
 
     def get_queryset(self):
-        return super().get_queryset().filter(domain=self.request.user.enforcer.enforced_domain)
-
+        if hasattr(self.request.user, 'enforcer'):
+            return super().get_queryset().filter(domain=self.request.user.enforcer.enforced_domain)
+        else:
+            return super().get_queryset()
 
 def get_grace_duration(default=datetime.timedelta(minutes=15)):
     value = getattr(settings, 'PARKKIHUBI_TIME_OLD_PARKINGS_VISIBLE', None)

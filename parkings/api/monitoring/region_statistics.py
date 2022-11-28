@@ -29,9 +29,18 @@ class RegionStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         time = parse_timestamp_or_now(self.request.query_params.get('time'))
-        return (
-            super().get_queryset()
-            .with_parking_count(time)
-            .values('id', 'parking_count')
-            .order_by('id')
-            .filter(parking_count__gt=0, domain=self.request.user.monitor.domain))
+        if hasattr(self.request.user, 'monitor'):
+            return (
+                super().get_queryset()
+                .with_parking_count(time)
+                .values('id', 'parking_count')
+                .order_by('id')
+                .filter(parking_count__gt=0, domain=self.request.user.monitor.domain))
+        else:
+            return (
+                super().get_queryset()
+                .with_parking_count(time)
+                .values('id', 'parking_count')
+                .order_by('id')
+                .filter(parking_count__gt=0)
+            )

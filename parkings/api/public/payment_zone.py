@@ -8,7 +8,7 @@ from parkings.api.monitoring.region import M2_PER_KM2
 from parkings.models import PaymentZone, EnforcementDomain
 
 
-class PaymentZoneSerializer(GeoFeatureModelSerializer):
+class PublicPaymentZoneSerializer(GeoFeatureModelSerializer):
     domain = serializers.SlugRelatedField(
         slug_field='code', queryset=EnforcementDomain.objects.all(),
         default=EnforcementDomain.get_default_domain)
@@ -31,7 +31,7 @@ class PaymentZoneSerializer(GeoFeatureModelSerializer):
 class PublicAPIPaymentZoneViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
     queryset = PaymentZone.objects.order_by('code')
-    serializer_class = PaymentZoneSerializer
+    serializer_class = PublicPaymentZoneSerializer
     pagination_class = GeoJsonPagination
     bbox_filter_field = 'geom'
     filter_backends = [WGS84InBBoxFilter]

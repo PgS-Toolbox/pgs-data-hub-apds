@@ -60,4 +60,7 @@ class RegionViewSet(viewsets.ReadOnlyModelViewSet):
     bbox_filter_include_overlapping = True
 
     def get_queryset(self):
-        return super().get_queryset().filter(domain=self.request.user.monitor.domain)
+        if hasattr(self.request.user, 'monitor'):
+            return super().get_queryset().filter(domain=self.request.user.monitor.domain)
+        else:
+            return super().get_queryset()

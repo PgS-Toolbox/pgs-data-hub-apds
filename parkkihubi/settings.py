@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'parkkihubi',
     'parkings',
     'sanitized_dump',
+    'drf_yasg'
 ] + env.list("EXTRA_INSTALLED_APPS", default=['parkkihubi_hel'])
 
 
@@ -184,7 +185,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ] if (DEBUG and TIER == 'dev') else []),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
-    'ALLOWED_VERSIONS': ('v1',),
+    'ALLOWED_VERSIONS': ('v1', 'apds'),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'EXCEPTION_HANDLER': 'parkings.exception_handler.parkings_exception_handler',
     'PAGE_SIZE': 100,
@@ -210,6 +211,18 @@ JWT2FA_AUTH = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+
+###########
+# Swagger #
+###########
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Api-Key": {"type": "apiKey", "name": "Authorization", "in": "header"},
+    },
+    "DISPLAY_OPERATION_ID": False,
+}
+
 ##############
 # Parkkihubi #
 ##############
@@ -223,6 +236,7 @@ PARKKIHUBI_MONITORING_API_ENABLED = env.bool(
 PARKKIHUBI_OPERATOR_API_ENABLED = env.bool('PARKKIHUBI_OPERATOR_API_ENABLED', True)
 PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
     env.bool('PARKKIHUBI_ENFORCEMENT_API_ENABLED', True))
+APDS_API_ENABLED = env.bool('APDS_API_ENABLED', True)
 PARKKIHUBI_PERMITS_PRUNABLE_AFTER = timedelta(days=3)
 
 DEFAULT_ENFORCEMENT_DOMAIN = (env.str('DEFAULT_ENFORCEMENT_DOMAIN', default='Helsinki'),

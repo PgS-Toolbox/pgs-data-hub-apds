@@ -134,5 +134,8 @@ class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
         :rtype: int
         """
-        assert self.geom.srs.units == (1.0, 'metre')
-        return int(round(self.geom.area * PARKING_SPOTS_PER_SQ_M))
+        if self.geom.srs.units == (1.0, 'metre'):
+            return int(round(self.geom.area * PARKING_SPOTS_PER_SQ_M))
+        else:
+            geom_transformed = self.geom.transform("3857", clone=True)
+            return int(round(geom_transformed.area * PARKING_SPOTS_PER_SQ_M))

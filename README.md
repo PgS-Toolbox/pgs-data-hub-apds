@@ -1,6 +1,6 @@
 # Parking Get Smart - Data Hub
 
-It is a generic version of Parkkihubi (https://github.com/City-of-Helsinki/parkkihubi) datahub, which is Django-based REST API for processing parking data. There were made changes to original parkkihubi, to allow easier deployment of the hub for other cities.
+It is a generic version of Parkkihubi (https://github.com/City-of-Helsinki/parkkihubi) datahub, which is Django-based REST API for processing parking data. There were made changes to original parkkihubi, to allow easier deployment of the hub for other cities. It was also adapted to the APDS data standard, which was chosen as a core for its parking data standard by DATEX II community. Without changing the data model of the original Parkkihubi, PICTEC team implemented endpoints for exposing and interpreting data in the APDS standard for appropriate objects
 
 ## Getting Started
 
